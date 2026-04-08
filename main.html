@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Project</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div id="gifSplash" class="gif-splash">
+        <img src="assets/lain.gif" alt="lain">
+        <button id="startAudioBtn" class="start-audio-btn" type="button" hidden>Enter</button>
+    </div>
+    <div class="rain front-row"></div>
+    <div class="crt-screen-effect"></div>
+    <audio id="bgMusic" loop preload="auto">
+        <source src="assets/music.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="loadingSound" preload="auto">
+        <source src="assets/lain.mp3" type="audio/mpeg">
+    </audio>
+
+    <h1 class="page-title">Tomy's Linktree</h1>
+
+    <div class="wrapper">
+        <h2 style="color: aliceblue; font-weight: bold;">Steam</h2>
+        <a href="https://steamcommunity.com/id/TomyReh/" target="_blank" rel="noopener noreferrer" aria-label="Open Steam">
+            <img class="wrapper-photo" src="assets/steam.png" alt="Steam photo">
+        </a>
+    </div>
+    <div class="wrapper wrapper-copy">
+        <h2 style="color: aliceblue; font-weight: bold;">Anilist</h2>
+        <a href="https://anilist.co/user/TomyReh87/" target="_blank" rel="noopener noreferrer" aria-label="Open Anilist">
+            <img class="wrapper-photo" src="assets/al.png" alt="Anilist photo">
+        </a>
+    </div>
+
+    <div class="profile-pic">
+        <img src="https://fluorescent-lights.neocities.org/Digital-CD-Disk-Vector-Transparent-PNG.png" alt="profile" class="pfp-fallback">
+        <input id="volumeSlider" class="volume-slider" type="range" min="0" max="1" step="0.01" value="0.3" aria-label="Music volume">
+        <button id="stopBtn" class="stop-button">▶</button>
+    </div>
+
+    <div>
+        <button id="catLinkBtn" class="cat-link" type="button" aria-label="Open cat link" data-url="https://youtu.be/LOeL7WHFuiA?t=44">
+            <img src="assets/cat.gif" alt="cat" class="catgif">
+        </button>
+    </div>
+
+        <div>
+        <img src="assets/lol.png" alt="lol" class="lolol">
+    </div>
+
+
+
+    <script src="rain.js"></script>
+    <script>
+        var gifSplash = document.getElementById('gifSplash');
+        var startAudioBtn = document.getElementById('startAudioBtn');
+        var loadingSound = document.getElementById('loadingSound');
+        var bgMusic = document.getElementById('bgMusic');
+        var toggleMusicBtn = document.getElementById('stopBtn');
+        var volumeSlider = document.getElementById('volumeSlider');
+        var catLinkBtn = document.getElementById('catLinkBtn');
+        var splashTimer = null;
+        var introFinished = false;
+
+        loadingSound.volume = 0.45;
+        bgMusic.volume = Number(volumeSlider.value);
+        toggleMusicBtn.textContent = 'Play';
+
+        function updateMusicState(isPlaying) {
+            document.body.classList.toggle('music-playing', isPlaying);
+            toggleMusicBtn.textContent = isPlaying ? '❚❚' : '▶︎';
+        }
+
+        function finishIntro() {
+            if (introFinished) {
+                return;
+            }
+
+            introFinished = true;
+            loadingSound.pause();
+            loadingSound.currentTime = 0;
+            gifSplash.style.display = 'none';
+            document.body.classList.remove('audio-blocked');
+
+            bgMusic.play().then(function() {
+                updateMusicState(true);
+            }).catch(function() {
+                document.body.classList.add('audio-blocked');
+                startAudioBtn.hidden = false;
+                gifSplash.style.display = 'flex';
+                introFinished = false;
+                updateMusicState(false);
+            });
+        }
+
+        function scheduleIntroEnd() {
+            clearTimeout(splashTimer);
+            splashTimer = setTimeout(finishIntro, 2000);
+        }
+
+        function beginAudioExperience() {
+            startAudioBtn.hidden = true;
+            document.body.classList.remove('audio-blocked');
+
+            loadingSound.currentTime = 0;
+            return loadingSound.play().then(function() {
+                scheduleIntroEnd();
+            }).catch(function() {
+                document.body.classList.add('audio-blocked');
+                startAudioBtn.hidden = false;
+                updateMusicState(false);
+            });
+        }
+
+        beginAudioExperience();
+
+        startAudioBtn.addEventListener('click', function() {
+            beginAudioExperience();
+        });
+
+        toggleMusicBtn.addEventListener('click', function() {
+            clearTimeout(splashTimer);
+            if (!bgMusic.paused) {
+                loadingSound.pause();
+                loadingSound.currentTime = 0;
+                bgMusic.pause();
+                updateMusicState(false);
+                return;
+            }
+
+            bgMusic.play().then(function() {
+                gifSplash.style.display = 'none';
+                startAudioBtn.hidden = true;
+                updateMusicState(true);
+            }).catch(function() {
+                document.body.classList.add('audio-blocked');
+                startAudioBtn.hidden = false;
+                gifSplash.style.display = 'flex';
+                updateMusicState(false);
+            });
+        });
+
+        volumeSlider.addEventListener('input', function() {
+            var volume = Number(volumeSlider.value);
+            bgMusic.volume = volume;
+            loadingSound.volume = Math.min(1, volume + 0.1);
+        });
+
+        catLinkBtn.addEventListener('click', function() {
+            var url = catLinkBtn.getAttribute('data-url');
+            if (url) {
+                window.open(url, '_blank', 'noopener,noreferrer');
+            }
+        });
+    </script>
+</body>
+</html>
